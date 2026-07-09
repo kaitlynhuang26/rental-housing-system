@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.py[cod]
+.env
+backups/
+.DS_Store
+frontend/node_modules/
+frontend/dist/
+data/*.xlsx
+data/**/*.xlsx
+!data/public_demo/
+!data/public_demo/Kos_Gedung_Panjang_PUBLIC_DEMO_LOCKED.xlsx
+pending_actions.json
