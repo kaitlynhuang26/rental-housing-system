@@ -16,6 +16,10 @@ LLM = understands language
 Backend = validates, calculates, previews, saves, and protects the Excel file
 ```
 
+
+
+![Dashboard Demo](gif_rental_ai.gif)
+
 Watch the full demo here: [Rental Housing Management System Demo](https://drive.google.com/file/d/1HvQ6VpqLoROjrwJ4TQEks1pJhEriypzx/view?usp=sharing)
 
 Watch the AI demo here: [Rental Assistant AI CHAT Demo]
