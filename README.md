@@ -18,6 +18,9 @@ Backend = validates, calculates, previews, saves, and protects the Excel file
 
 Watch the full demo here: [Rental Housing Management System Demo](https://drive.google.com/file/d/1HvQ6VpqLoROjrwJ4TQEks1pJhEriypzx/view?usp=sharing)
 
+Watch the AI demo here: [Rental Assistant AI CHAT Demo]
+(https://drive.google.com/file/d/1bgRpdyGd3ZfFBnropEjBBZEv2Vsaxq5z/view?usp=sharing)
+
 
 ## Demo Data
 
