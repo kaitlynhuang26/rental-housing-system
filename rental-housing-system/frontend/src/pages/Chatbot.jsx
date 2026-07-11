@@ -7,9 +7,13 @@ const welcome = { role: "assistant", text: "Hi. Ask me about rooms and payments,
 const CHAT_STORAGE_KEY = "rental-chat-session-v2";
 const CHAT_MEMORY_MS = 5 * 60 * 1000;
 
-function loadChatSession() {
+function storageKey(locationId) {
+  return `${CHAT_STORAGE_KEY}-${locationId || "default"}`;
+}
+
+function loadChatSession(locationId) {
   try {
-    const saved = JSON.parse(sessionStorage.getItem(CHAT_STORAGE_KEY));
+    const saved = JSON.parse(sessionStorage.getItem(storageKey(locationId)));
     if (saved && Date.now() - saved.savedAt < CHAT_MEMORY_MS) {
       return {
         messages: saved.messages?.length ? saved.messages : [welcome],
@@ -22,20 +26,26 @@ function loadChatSession() {
   return { messages: [welcome], pendingContext: "" };
 }
 
-export default function Chatbot({ refresh }) {
-  const initial = loadChatSession();
+export default function Chatbot({ refresh, selectedLocation, selectedLocationInfo }) {
+  const initial = loadChatSession(selectedLocation);
   const [messages, setMessages] = useState(initial.messages);
   const [pendingContext, setPendingContext] = useState(initial.pendingContext);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
 
   useEffect(() => {
-    sessionStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify({
+    sessionStorage.setItem(storageKey(selectedLocation), JSON.stringify({
       savedAt: Date.now(),
       messages,
       pendingContext,
     }));
-  }, [messages, pendingContext]);
+  }, [messages, pendingContext, selectedLocation]);
+
+  useEffect(() => {
+    const next = loadChatSession(selectedLocation);
+    setMessages(next.messages);
+    setPendingContext(next.pendingContext);
+  }, [selectedLocation]);
 
   const send = async (event) => {
     event?.preventDefault();
@@ -52,7 +62,7 @@ export default function Chatbot({ refresh }) {
       const apiMessage = pendingContext
         ? `${combinedContext}\nThis is one continuing request. Keep the original intent and combine all provided fields. Do not restart the task.`
         : text;
-      const response = await api.chat(apiMessage);
+      const response = await api.chat(apiMessage, selectedLocation);
       setPendingContext(response.type === "follow_up" ? combinedContext : "");
       setMessages((items) => [...items, { role: "assistant", text: response.message, response }]);
     } catch (error) {
@@ -63,7 +73,7 @@ export default function Chatbot({ refresh }) {
   const confirm = async (actionId, shouldSave) => {
     setSending(true);
     try {
-      const result = await api.confirmChat(actionId, shouldSave);
+      const result = await api.confirmChat(actionId, shouldSave, selectedLocation);
       setMessages((items) => [...items, { role: "assistant", text: result.message, saved: shouldSave }]);
       if (shouldSave && result.success) await refresh();
     } catch (error) {
@@ -74,13 +84,14 @@ export default function Chatbot({ refresh }) {
   const clearChat = () => {
     setMessages([welcome]);
     setPendingContext("");
-    sessionStorage.removeItem(CHAT_STORAGE_KEY);
+    sessionStorage.removeItem(storageKey(selectedLocation));
   };
 
   return <>
-    <PageHeader title="Chatbot" subtitle="Ask a question or preview a safe change to the rental records." action={
+    <PageHeader title="Chatbot" subtitle={`Ask about ${selectedLocationInfo?.name || "the selected location"} or preview a safe change.`} action={
       <button className="button secondary" onClick={clearChat}><Trash2 size={17} />Clear chat</button>
     } />
+    {selectedLocation === "all" && <div className="info-banner">Please choose one rental location before using the chatbot, so updates do not go to the wrong workbook.</div>}
     <section className="chat-panel">
       <div className="chat-messages">{messages.map((item, index) => <div className={`chat-message ${item.role}`} key={index}>
         <span className="avatar">{item.role === "user" ? <User size={18} /> : <Bot size={18} />}</span>
@@ -92,7 +103,7 @@ export default function Chatbot({ refresh }) {
           </div>}
         </div>
       </div>)}{sending && <div className="typing">Assistant is checking the records...</div>}</div>
-      <form className="chat-input" onSubmit={send}><textarea rows="2" value={input} onChange={(e) => setInput(e.target.value)} placeholder="Type a message, for example: Which rooms are empty?" /><button className="button primary" disabled={!input.trim() || sending}><Send size={18} />Send</button></form>
+      <form className="chat-input" onSubmit={send}><textarea rows="2" value={input} onChange={(e) => setInput(e.target.value)} placeholder="Type a message, for example: Which rooms are empty?" /><button className="button primary" disabled={!input.trim() || sending || selectedLocation === "all"}><Send size={18} />Send</button></form>
     </section>
   </>;
 }

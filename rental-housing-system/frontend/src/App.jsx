@@ -21,12 +21,15 @@ const navigation = [
   ["rollover", "Auto Rollover", CalendarSync],
   ["audit", "Audit Log", History],
 ];
+const ALL_LOCATION = { location_id: "all", name: "All Locations" };
 
 export default function App() {
   const [page, setPage] = useState("dashboard");
   const [mobileNav, setMobileNav] = useState(false);
+  const [locations, setLocations] = useState([]);
+  const [selectedLocation, setSelectedLocation] = useState(() => localStorage.getItem("selected-location") || "gedung_panjang");
   const [data, setData] = useState({
-    summary: null, rooms: [], payments: [], late: [], unpaid: [], audit: [],
+    summary: null, rooms: [], payments: [], late: [], unpaid: [], audit: [], locationSummaries: [],
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -36,20 +39,29 @@ export default function App() {
     setLoading(true);
     setError("");
     try {
+      const locationList = await api.locations();
+      setLocations(locationList);
+      const locationId = selectedLocation;
       const [summary, rooms, payments, late, unpaid, audit] = await Promise.all([
-        api.summary(), api.rooms(), api.payments(), api.latePayments(),
-        api.unpaidPayments(), api.auditLog(),
+        api.summary(locationId), api.rooms(locationId), api.payments(locationId), api.latePayments(locationId),
+        api.unpaidPayments(locationId), api.auditLog(locationId),
       ]);
-      setData({ summary, rooms, payments, late, unpaid, audit });
+      const locationSummaries = locationId === "all"
+        ? await Promise.all(locationList.map((location) => api.summary(location.location_id)))
+        : [];
+      setData({ summary, rooms, payments, late, unpaid, audit, locationSummaries });
       setLastUpdated(new Date());
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [selectedLocation]);
 
   useEffect(() => { refresh(); }, [refresh]);
+  useEffect(() => {
+    localStorage.setItem("selected-location", selectedLocation);
+  }, [selectedLocation]);
   useEffect(() => {
     const refreshOnFocus = () => refresh();
     window.addEventListener("focus", refreshOnFocus);
@@ -67,6 +79,13 @@ export default function App() {
     if (nextPage === "dashboard") refresh();
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
+  const locationOptions = [ALL_LOCATION, ...locations];
+  const selectedLocationInfo = locationOptions.find((item) => item.location_id === selectedLocation) || ALL_LOCATION;
+
+  const changeLocation = (event) => {
+    setSelectedLocation(event.target.value);
+    setMobileNav(false);
+  };
 
   return (
     <div className="app-shell">
@@ -76,8 +95,16 @@ export default function App() {
         </button>
         <div className="brand">
           <span className="brand-mark"><Building2 size={22} /></span>
-          <div><strong>Gedung Panjang</strong><span>Rental manager</span></div>
+          <div><strong>{selectedLocationInfo.name}</strong><span>Rental manager</span></div>
         </div>
+        <label className="location-picker">
+          <span>Location</span>
+          <select value={selectedLocation} onChange={changeLocation}>
+            {locationOptions.map((location) => (
+              <option key={location.location_id} value={location.location_id}>{location.name}</option>
+            ))}
+          </select>
+        </label>
         <nav className="desktop-nav" aria-label="Main navigation">
           {navigation.map(([id, label, Icon]) => (
             <button key={id} className={page === id ? "active" : ""} onClick={() => openPage(id)}>
@@ -107,7 +134,7 @@ export default function App() {
         {error && (
           <div className="connection-error"><AlertTriangle size={20} /><div><strong>Cannot load rental data</strong><span>{error}</span></div></div>
         )}
-        {!error && <CurrentPage {...data} loading={loading} refresh={refresh} />}
+        {!error && <CurrentPage {...data} loading={loading} refresh={refresh} selectedLocation={selectedLocation} selectedLocationInfo={selectedLocationInfo} />}
       </main>
       <footer>{lastUpdated ? `Last refreshed ${lastUpdated.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : "Rental records"}</footer>
     </div>

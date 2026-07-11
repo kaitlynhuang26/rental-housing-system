@@ -3,7 +3,7 @@ import { Banknote, BedDouble, CircleDollarSign, CreditCard, DoorOpen, HandCoins,
 import { AlertRows, LoadingState, PageHeader } from "../components/Common";
 import { formatCurrencyIDR } from "../utils";
 
-export default function Dashboard({ summary, rooms, late, unpaid, loading }) {
+export default function Dashboard({ summary, rooms, late, unpaid, loading, locationSummaries = [], selectedLocation }) {
   if (loading && !summary) return <LoadingState />;
   const cards = [
     ["Total rooms", summary?.total_rooms, BedDouble, "neutral"],
@@ -25,11 +25,25 @@ export default function Dashboard({ summary, rooms, late, unpaid, loading }) {
     <section className="summary-grid">{cards.map(([label, value, Icon, tone]) => (
       <article className={`summary-card ${tone}`} key={label}><div><span>{label}</span><strong>{value ?? "-"}</strong></div><Icon size={21} /></article>
     ))}</section>
+    {selectedLocation === "all" && !!locationSummaries.length && <section className="section-block">
+      <div className="section-heading"><div><h2>Locations overview</h2><p>Compare each rental location at a glance.</p></div></div>
+      <div className="location-overview">
+        {locationSummaries.map((item) => <article className="location-card" key={item.location_id}>
+          <strong>{item.location_name}</strong>
+          <dl>
+            <dt>Total rooms</dt><dd>{item.total_rooms}</dd>
+            <dt>Occupied</dt><dd>{item.occupied_rooms}</dd>
+            <dt>Empty</dt><dd>{item.empty_rooms}</dd>
+            <dt>Total paid</dt><dd>{formatCurrencyIDR(item.total_amount_paid)}</dd>
+          </dl>
+        </article>)}
+      </div>
+    </section>}
     <section className="section-block">
       <div className="section-heading"><div><h2>Room availability</h2><p>Current room status from the latest rental records.</p></div></div>
       <div className="availability">
-        <div><h3><span className="dot occupied" />Occupied rooms <small>{occupied.length}</small></h3><div className="room-chips">{occupied.map((room) => <span className="room-chip occupied" key={room.room_id}>{room.room_id}</span>)}</div></div>
-        <div><h3><span className="dot empty" />Empty rooms <small>{empty.length}</small></h3><div className="room-chips">{empty.map((room) => <span className="room-chip empty" key={room.room_id}>{room.room_id}</span>)}</div></div>
+        <div><h3><span className="dot occupied" />Occupied rooms <small>{occupied.length}</small></h3><div className="room-chips">{occupied.map((room) => <span className="room-chip occupied" key={`${room.location_id || "one"}-${room.room_id}`}>{room.location_id && selectedLocation === "all" ? `${room.location_name}: ` : ""}{room.room_id}</span>)}</div></div>
+        <div><h3><span className="dot empty" />Empty rooms <small>{empty.length}</small></h3><div className="room-chips">{empty.map((room) => <span className="room-chip empty" key={`${room.location_id || "one"}-${room.room_id}`}>{room.location_id && selectedLocation === "all" ? `${room.location_name}: ` : ""}{room.room_id}</span>)}</div></div>
       </div>
     </section>
     <section className="section-block">

@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: rental-housing-backend
+    env: python
+    rootDir: rental-housing-system
+    buildCommand: "pip install -r backend/requirements.txt"
+    startCommand: "uvicorn backend.main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: RENTAL_DEMO_MODE
+        value: "true"
+      - key: GROQ_MODEL
+        value: llama-3.1-8b-instant
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false

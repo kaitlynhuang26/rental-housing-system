@@ -12,9 +12,19 @@ class ApiModel(BaseModel):
 class HealthResponse(ApiModel):
     status: str
     excel_file: str
+    location_id: Optional[str] = None
+    location_name: Optional[str] = None
+
+
+class LocationInfo(ApiModel):
+    location_id: str
+    name: str
+    excel_file: str
 
 
 class Room(ApiModel):
+    location_id: Optional[str] = None
+    location_name: Optional[str] = None
     room_id: int
     floor: Optional[int] = None
     room_number: Optional[int] = None
@@ -28,6 +38,8 @@ class Room(ApiModel):
 
 
 class Payment(ApiModel):
+    location_id: Optional[str] = None
+    location_name: Optional[str] = None
     row_number: int
     room_id: Optional[int] = None
     rent_start_date: Optional[str] = None
@@ -51,6 +63,8 @@ class Payment(ApiModel):
 
 
 class Summary(ApiModel):
+    location_id: Optional[str] = None
+    location_name: Optional[str] = None
     total_rooms: int
     occupied_rooms: int
     empty_rooms: int
@@ -71,6 +85,8 @@ class RoomDetail(ApiModel):
 
 
 class AuditLogEntry(ApiModel):
+    location_id: Optional[str] = None
+    location_name: Optional[str] = None
     timestamp: Optional[str] = None
     action_type: Optional[str] = None
     room_id: Optional[int] = None
@@ -206,6 +222,7 @@ class ExtractedIntent(ApiModel):
 
 class ChatRequest(ApiModel):
     message: str
+    location_id: Optional[str] = None
 
 
 class ChatResponse(ApiModel):
@@ -221,6 +238,7 @@ class ChatResponse(ApiModel):
 class ChatConfirmRequest(ApiModel):
     action_id: str
     confirm: bool
+    location_id: Optional[str] = None
 
 
 class PendingAction(ApiModel):
@@ -232,6 +250,7 @@ class PendingAction(ApiModel):
     request_payload: Dict[str, Any]
     preview_response: OperationResponse
     user_message: str
+    location_id: Optional[str] = None
     status: Literal["pending", "confirmed", "cancelled"] = "pending"
 
 

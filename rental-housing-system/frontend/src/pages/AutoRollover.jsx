@@ -4,7 +4,7 @@ import { api } from "../api";
 import { EmptyState, PageHeader, StatusBadge } from "../components/Common";
 import { formatCurrencyIDR } from "../utils";
 
-export default function AutoRollover({ refresh }) {
+export default function AutoRollover({ refresh, selectedLocation, selectedLocationInfo }) {
   const [preview, setPreview] = useState(null);
   const [selected, setSelected] = useState(new Set());
   const [loading, setLoading] = useState(false);
@@ -14,7 +14,7 @@ export default function AutoRollover({ refresh }) {
   const loadPreview = async () => {
     setLoading(true); setError(""); setMessage("");
     try {
-      const result = await api.rollover(true);
+      const result = await api.rollover(true, [], selectedLocation);
       setPreview(result);
       setSelected(new Set(result.rows_to_create.map((row) => row.room_id)));
     } catch (err) { setError(err.message); } finally { setLoading(false); }
@@ -28,7 +28,7 @@ export default function AutoRollover({ refresh }) {
     setLoading(true); setError("");
     const excluded = preview.rows_to_create.filter((row) => !selected.has(row.room_id)).map((row) => row.room_id);
     try {
-      const result = await api.rollover(false, excluded);
+      const result = await api.rollover(false, excluded, selectedLocation);
       setMessage(result.message);
       setPreview(null);
       await refresh();
@@ -36,9 +36,10 @@ export default function AutoRollover({ refresh }) {
   };
 
   return <>
-    <PageHeader title="Auto rollover" subtitle="Review the next rental periods before anything is saved." action={
-      <button className="button primary" disabled={loading} onClick={loadPreview}><CalendarSync size={18} />{loading ? "Checking..." : "Preview Auto Rollover"}</button>
+    <PageHeader title="Auto rollover" subtitle={`Review next rental periods for ${selectedLocationInfo?.name || "the selected location"}.`} action={
+      <button className="button primary" disabled={loading || selectedLocation === "all"} onClick={loadPreview}><CalendarSync size={18} />{loading ? "Checking..." : "Preview Auto Rollover"}</button>
     } />
+    {selectedLocation === "all" && <div className="info-banner">Choose one rental location before running auto rollover. This prevents creating rows in the wrong workbook.</div>}
     <div className="info-banner">Tenants are assumed to continue. Uncheck any room where the tenant is not continuing.</div>
     {error && <div className="inline-error">{error}</div>}
     {message && <div className="success-banner"><CheckCircle2 />{message}</div>}

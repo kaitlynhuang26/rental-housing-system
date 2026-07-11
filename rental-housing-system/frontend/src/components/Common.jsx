@@ -25,11 +25,11 @@ export function AlertRows({ late, unpaid }) {
   ];
   if (!rows.length) return <EmptyState message="No late or unpaid rooms need attention." />;
   return <div className="alert-list">{rows.map((item) => (
-    <article className={`alert-item ${item.kind.toLowerCase()}`} key={`${item.kind}-${item.row_number}`}>
+    <article className={`alert-item ${item.kind.toLowerCase()}`} key={`${item.kind}-${item.location_id || "one"}-${item.row_number}`}>
       <div className="alert-room">{item.room_id}</div>
       <div>
         <strong>{item.kind === "Late" ? `Room ${item.room_id} paid late` : `Room ${item.room_id} has not paid yet`}</strong>
-        <p>{item.tenant_name || "No tenant name"} · {item.rent_start_date} to {item.rent_end_date}</p>
+        <p>{item.location_name ? `${item.location_name} · ` : ""}{item.tenant_name || "No tenant name"} · {item.rent_start_date} to {item.rent_end_date}</p>
       </div>
       <div className="alert-amount"><strong>{formatCurrencyIDR(item.amount_due)}</strong><span>{item.kind === "Late" ? `Paid ${item.payment_date || "-"}` : "No payment yet"}</span></div>
     </article>

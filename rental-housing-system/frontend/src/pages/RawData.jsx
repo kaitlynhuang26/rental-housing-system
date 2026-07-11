@@ -4,7 +4,7 @@ import { EmptyState, LoadingState, PageHeader, StatusBadge } from "../components
 import { formatCurrencyIDR } from "../utils";
 
 const statuses = ["All", "Paid", "Late", "Unpaid", "Pending", "N/A"];
-export default function RawData({ payments, loading }) {
+export default function RawData({ payments, loading, selectedLocation }) {
   const [status, setStatus] = useState("All");
   const [room, setRoom] = useState("");
   const [tenant, setTenant] = useState("");
@@ -22,9 +22,9 @@ export default function RawData({ payments, loading }) {
       <label className="search"><Search size={17} /><input value={tenant} onChange={(e) => setTenant(e.target.value)} placeholder="Tenant name" /></label>
     </div>
     {!visible.length ? <EmptyState /> : <div className="table-wrap raw-table"><table><thead><tr>
-      {["Room","Start","End","Due","Paid","Payment date","Status","Room status","Method","Tenant","Phone","AC","Record","Source","Notes"].map((h) => <th key={h}>{h}</th>)}
-    </tr></thead><tbody>{visible.map((p) => <tr key={p.row_number}>
-      <td><strong>{p.room_id ?? "-"}</strong></td><td>{p.rent_start_date || "-"}</td><td>{p.rent_end_date || "-"}</td><td>{formatCurrencyIDR(p.amount_due)}</td><td>{formatCurrencyIDR(p.amount_paid)}</td>
+      {[...(selectedLocation === "all" ? ["Location"] : []),"Room","Start","End","Due","Paid","Payment date","Status","Room status","Method","Tenant","Phone","AC","Record","Source","Notes"].map((h) => <th key={h}>{h}</th>)}
+    </tr></thead><tbody>{visible.map((p) => <tr key={`${p.location_id || "one"}-${p.row_number}`}>
+      {selectedLocation === "all" && <td>{p.location_name || "-"}</td>}<td><strong>{p.room_id ?? "-"}</strong></td><td>{p.rent_start_date || "-"}</td><td>{p.rent_end_date || "-"}</td><td>{formatCurrencyIDR(p.amount_due)}</td><td>{formatCurrencyIDR(p.amount_paid)}</td>
       <td>{p.payment_date || "-"}</td><td><StatusBadge status={p.calculated_payment_status} /></td><td>{p.room_status || "-"}</td><td>{p.payment_method || "-"}</td>
       <td>{p.tenant_name || "-"}</td><td>{p.tenant_ph || "-"}</td><td>{p.ac || "-"}</td><td>{p.record_status || "-"}</td><td>{p.source || "-"}</td><td className="notes-cell">{p.notes || "-"}</td>
     </tr>)}</tbody></table></div>}

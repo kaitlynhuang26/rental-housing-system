@@ -24,30 +24,37 @@ async function request(path, options = {}) {
   return body;
 }
 
+function withLocation(path, locationId) {
+  if (!locationId) return path;
+  const separator = path.includes("?") ? "&" : "?";
+  return `${path}${separator}location_id=${encodeURIComponent(locationId)}`;
+}
+
 export const api = {
-  summary: () => request("/summary"),
-  rooms: () => request("/rooms"),
-  payments: () => request("/payments"),
-  latePayments: () => request("/payments/late"),
-  unpaidPayments: () => request("/payments/unpaid"),
-  auditLog: () => request("/audit-log?limit=100"),
-  chat: (message) =>
-    request("/chat", { method: "POST", body: JSON.stringify({ message }) }),
-  confirmChat: (actionId, confirm) =>
+  locations: () => request("/locations"),
+  summary: (locationId) => request(withLocation("/summary", locationId)),
+  rooms: (locationId) => request(withLocation("/rooms", locationId)),
+  payments: (locationId) => request(withLocation("/payments", locationId)),
+  latePayments: (locationId) => request(withLocation("/payments/late", locationId)),
+  unpaidPayments: (locationId) => request(withLocation("/payments/unpaid", locationId)),
+  auditLog: (locationId) => request(withLocation("/audit-log?limit=100", locationId)),
+  chat: (message, locationId) =>
+    request("/chat", { method: "POST", body: JSON.stringify({ message, location_id: locationId }) }),
+  confirmChat: (actionId, confirm, locationId) =>
     request("/chat/confirm", {
       method: "POST",
-      body: JSON.stringify({ action_id: actionId, confirm }),
+      body: JSON.stringify({ action_id: actionId, confirm, location_id: locationId }),
     }),
-  rollover: (preview, excludedRoomIds = []) =>
-    request("/rental-periods/auto-rollover", {
+  rollover: (preview, excludedRoomIds = [], locationId) =>
+    request(withLocation("/rental-periods/auto-rollover", locationId), {
       method: "POST",
       body: JSON.stringify({
         preview,
         excluded_room_ids: excludedRoomIds,
       }),
     }),
-  undoLastChange: (preview, backupFile = null) =>
-    request("/undo/last-change", {
+  undoLastChange: (preview, backupFile = null, locationId) =>
+    request(withLocation("/undo/last-change", locationId), {
       method: "POST",
       body: JSON.stringify({ preview, backup_file: backupFile }),
     }),

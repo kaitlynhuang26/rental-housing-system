@@ -5,7 +5,7 @@ import { formatCurrencyIDR } from "../utils";
 
 const filters = ["All", "Occupied", "Empty", "AC", "Non-AC", "Rent required", "No rent required"];
 
-export default function Rooms({ rooms, loading }) {
+export default function Rooms({ rooms, loading, selectedLocation }) {
   const [filter, setFilter] = useState("All");
   const [query, setQuery] = useState("");
   const visible = useMemo(() => rooms.filter((room) => {
@@ -27,9 +27,9 @@ export default function Rooms({ rooms, loading }) {
       <label className="search"><Search size={17} /><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search room or note" /></label>
     </div>
     {!visible.length ? <EmptyState /> : <div className="table-wrap"><table><thead><tr>
-      <th>Room</th><th>Status</th><th>Floor</th><th>AC</th><th>Occupants</th><th>Usual rent</th><th>Rent required</th><th>Note</th>
-    </tr></thead><tbody>{visible.map((room) => <tr key={room.room_id}>
-      <td><strong>{room.room_id}</strong></td><td><span className={`room-status ${room.current_status?.toLowerCase()}`}>{room.current_status || "-"}</span></td>
+      {selectedLocation === "all" && <th>Location</th>}<th>Room</th><th>Status</th><th>Floor</th><th>AC</th><th>Occupants</th><th>Usual rent</th><th>Rent required</th><th>Note</th>
+    </tr></thead><tbody>{visible.map((room) => <tr key={`${room.location_id || "one"}-${room.room_id}`}>
+      {selectedLocation === "all" && <td>{room.location_name || "-"}</td>}<td><strong>{room.room_id}</strong></td><td><span className={`room-status ${room.current_status?.toLowerCase()}`}>{room.current_status || "-"}</span></td>
       <td>{room.floor ?? "-"}</td><td>{room.ac === "Y" ? "Yes" : "No"}</td><td>{room.current_occupants}</td>
       <td>{formatCurrencyIDR(room.usual_price)}</td><td>{room.rent_required === "Y" ? "Yes" : "No"}</td><td className="notes-cell">{room.note || "-"}</td>
     </tr>)}</tbody></table></div>}

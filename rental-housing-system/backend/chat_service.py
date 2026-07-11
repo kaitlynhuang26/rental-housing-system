@@ -32,8 +32,10 @@ class ChatService:
         pending_store: PendingActionStore | None = None,
         intent_agent: IntentAgent | None = None,
         today: date | None = None,
+        location_id: str | None = None,
     ):
         self.today = today or date.today()
+        self.location_id = location_id
         self.excel_service = excel_service or RentalExcelService(today=self.today)
         self.update_service = update_service or RentalUpdateService(today=self.today)
         self.pending_store = pending_store or PendingActionStore()
@@ -365,6 +367,7 @@ class ChatService:
             request_payload=payload,
             preview_response=preview,
             user_message=original_message,
+            location_id=self.location_id,
         )
         return ChatResponse(
             type="confirmation_required",

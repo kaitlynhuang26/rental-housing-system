@@ -31,6 +31,7 @@ class PendingActionStore:
         request_payload: dict[str, Any],
         preview_response: OperationResponse,
         user_message: str,
+        location_id: str | None = None,
     ) -> PendingAction:
         action = PendingAction(
             action_id=uuid.uuid4().hex,
@@ -41,6 +42,7 @@ class PendingActionStore:
             request_payload=request_payload,
             preview_response=preview_response,
             user_message=user_message,
+            location_id=location_id,
             status="pending",
         )
         actions = self.list_all()

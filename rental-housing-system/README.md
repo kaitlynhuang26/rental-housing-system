@@ -378,3 +378,48 @@ Cancel:
 - Move from Excel to a database when the workflow is stable.
 - Add deployment for the backend and frontend.
 - Add automated tests around the Excel update functions.
+
+## Demo Deployment
+
+This repo is prepared for a safe public demo deployment.
+
+The deployed demo should use:
+
+```text
+RENTAL_DEMO_MODE=true
+```
+
+That makes the backend read the locked public demo workbooks in:
+
+```text
+data/public_demo/
+```
+
+Local private Excel files remain ignored by Git and are not used by the public demo.
+
+### Backend On Render
+
+Use the root `render.yaml` file from the Git repository.
+
+Important environment variables:
+
+```text
+RENTAL_DEMO_MODE=true
+GROQ_MODEL=llama-3.1-8b-instant
+GROQ_API_KEY=your_key_here
+CORS_ALLOWED_ORIGINS=https://your-vercel-frontend-url.vercel.app
+```
+
+### Frontend On Vercel
+
+Set the Vercel root directory to:
+
+```text
+rental-housing-system/frontend
+```
+
+Set this environment variable after the backend is deployed:
+
+```text
+VITE_API_BASE_URL=https://your-render-backend-url.onrender.com
+```

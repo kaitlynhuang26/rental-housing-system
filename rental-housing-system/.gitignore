@@ -9,5 +9,5 @@ frontend/dist/
 data/*.xlsx
 data/**/*.xlsx
 !data/public_demo/
-!data/public_demo/Kos_Gedung_Panjang_PUBLIC_DEMO_LOCKED.xlsx
+!data/public_demo/*.xlsx
 pending_actions.json
