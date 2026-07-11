@@ -258,6 +258,64 @@ To use another backend URL:
 VITE_API_BASE_URL="http://127.0.0.1:8001" npm run dev
 ```
 
+## Free Demo Deployment
+
+This project can be deployed as two free demo services:
+
+- **Backend:** Hugging Face Spaces using the root `Dockerfile`
+- **Frontend:** Vercel using `rental-housing-system/frontend`
+
+The deployed demo uses the locked public demo Excel files only. Your real local Excel files stay private and are ignored by Git.
+
+### 1. Deploy Backend To Hugging Face Spaces
+
+1. Go to [Hugging Face Spaces](https://huggingface.co/spaces).
+2. Click **Create new Space**.
+3. Choose:
+   - **Space SDK:** Docker
+   - **Visibility:** Public, for portfolio demo
+   - **Repository:** connect/import this GitHub repo, or upload from GitHub
+4. In the Space settings, add secrets/environment variables:
+
+```text
+RENTAL_DEMO_MODE=true
+GROQ_API_KEY=your_groq_key_here
+GROQ_MODEL=llama-3.1-8b-instant
+CORS_ALLOWED_ORIGINS=https://your-vercel-app.vercel.app
+```
+
+In demo mode, the backend also allows Vercel preview URLs like `https://something.vercel.app`. After the final Vercel URL is ready, using the exact `CORS_ALLOWED_ORIGINS` value is still cleaner.
+
+After Hugging Face builds, test:
+
+```text
+https://your-space-name.hf.space/health
+```
+
+### 2. Deploy Frontend To Vercel
+
+1. Go to [Vercel](https://vercel.com).
+2. Import the GitHub repository.
+3. Set:
+   - **Root Directory:** `rental-housing-system/frontend`
+   - **Build Command:** `npm run build`
+   - **Output Directory:** `dist`
+4. Add this environment variable:
+
+```text
+VITE_API_BASE_URL=https://your-space-name.hf.space
+```
+
+Then deploy.
+
+### Important Demo Notes
+
+- The deployed site is for portfolio/demo use.
+- It reads the public demo workbooks from `data/public_demo`.
+- Any Excel writes on Hugging Face are not a reliable permanent database.
+- Your mom's real version should stay local on her laptop using the real Excel files.
+- For the local version, do not set `RENTAL_DEMO_MODE=true`.
+
 ## Main API Endpoints
 
 ### Read-only
@@ -383,8 +441,7 @@ Cancel:
 
 ## Notes For Future Work
 
-- Support multiple rental locations with a property selector.
+- Add a local launcher for non-technical use on another laptop.
 - Add role-based user access.
 - Move from Excel to a database when the workflow is stable.
-- Add deployment for the backend and frontend.
 - Add automated tests around the Excel update functions.

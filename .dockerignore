@@ -1,0 +1,15 @@
+.git
+.DS_Store
+step.rtf
+
+rental-housing-system/.venv
+rental-housing-system/.env
+rental-housing-system/backups
+rental-housing-system/pending_actions.json
+rental-housing-system/frontend/node_modules
+rental-housing-system/frontend/dist
+
+rental-housing-system/data/*.xlsx
+rental-housing-system/data/**/*.xlsx
+!rental-housing-system/data/public_demo/
+!rental-housing-system/data/public_demo/*.xlsx

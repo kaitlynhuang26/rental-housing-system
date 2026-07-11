@@ -50,10 +50,13 @@ configured_origins = [
     for origin in os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
     if origin.strip()
 ]
+configured_origin_regex = os.getenv("CORS_ALLOWED_ORIGIN_REGEX", "").strip()
+demo_origin_regex = r"https://.*\.vercel\.app" if os.getenv("RENTAL_DEMO_MODE", "").lower() in {"1", "true", "yes"} else ""
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=configured_origins or DEFAULT_CORS_ORIGINS,
+    allow_origin_regex=configured_origin_regex or demo_origin_regex or None,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
